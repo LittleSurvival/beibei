@@ -8,10 +8,10 @@ import subprocess
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
-PHOTO_SIZE = (480, 640)
-VIDEO_SIZE = (500, 720)
-PHOTOS_PER_SECOND = 6
-VIDEO_FPS = 30
+ALIGNMENT_SIZE = (480, 640)
+PHOTO_SIZE = (1080, 1440)
+VIDEO_SIZE = (1120, 1600)
+VIDEO_FPS = 24
 BACKGROUND = "#131512"
 PHOTO_BACKGROUND = "#10130f"
 
@@ -27,8 +27,16 @@ def photo_frame(path, matrix):
     # Pillow takes the inverse of the source-to-canvas matrix used on the site.
     inverse = (e / det, -b / det, (b * f - e * c) / det,
                -d / det, a / det, (d * c - a * f) / det)
-    return photo.resize(PHOTO_SIZE, Image.Resampling.BICUBIC).transform(
-        PHOTO_SIZE, Image.Transform.AFFINE, inverse, Image.Resampling.BICUBIC,
+    # Convert output pixels to alignment coordinates, then to native source pixels.
+    source_x, source_y = (size / basis for size, basis in zip(photo.size, ALIGNMENT_SIZE))
+    output_x, output_y = (basis / size for basis, size in zip(ALIGNMENT_SIZE, PHOTO_SIZE))
+    a, b, c, d, e, f = inverse
+    native_inverse = (
+        a * source_x * output_x, b * source_x * output_y, c * source_x,
+        d * source_y * output_x, e * source_y * output_y, f * source_y,
+    )
+    return photo.transform(
+        PHOTO_SIZE, Image.Transform.AFFINE, native_inverse, Image.Resampling.BICUBIC,
         fillcolor=PHOTO_BACKGROUND,
     )
 
@@ -40,17 +48,19 @@ def render(output):
     stem = f"beibei-day{first}-day{last}"
     output.mkdir(parents=True, exist_ok=True)
 
-    mask = Image.new("L", (480, 700))
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 479, 699), radius=18, fill=255)
-    day_font = ImageFont.load_default(size=25)
-    date_font = ImageFont.load_default(size=21)
+    card_width, card_height = PHOTO_SIZE[0], VIDEO_SIZE[1] - 40
+    mask = Image.new("L", (card_width, card_height))
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, card_width - 1, card_height - 1), radius=38, fill=255)
+    day_font = ImageFont.load_default(size=54)
+    date_font = ImageFont.load_default(size=45)
+    caption_y = (PHOTO_SIZE[1] + card_height) // 2
     command = [
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
         "-f", "rawvideo", "-pixel_format", "rgb24", "-video_size", f"{VIDEO_SIZE[0]}x{VIDEO_SIZE[1]}",
-        "-framerate", str(PHOTOS_PER_SECOND), "-i", "-",
-        "-r", str(VIDEO_FPS), "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+        "-framerate", str(VIDEO_FPS), "-i", "-",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "18",
         "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(output / f"{stem}.mp4"),
-        "-r", str(VIDEO_FPS), "-c:v", "libvpx-vp9", "-crf", "30", "-b:v", "0",
+        "-c:v", "libvpx-vp9", "-crf", "25", "-b:v", "0",
         "-deadline", "good", "-cpu-used", "4", "-row-mt", "1",
         "-pix_fmt", "yuv420p", str(output / f"{stem}.webm"),
     ]
@@ -63,26 +73,30 @@ def render(output):
                 card = Image.new("RGB", mask.size, "#20271e")
                 card.paste(photo, (0, 0))
                 draw = ImageDraw.Draw(card)
-                draw.text((20, 670), f"Day {day}", font=day_font, fill="#d6ed9f",
-                          stroke_width=1, anchor="lm")
-                draw.text((460, 670), row["date"], font=date_font, fill="#b6b8ab", anchor="rm")
+                draw.text((44, caption_y), f"Day {day}", font=day_font, fill="#d6ed9f",
+                          stroke_width=2, anchor="lm")
+                draw.text((card_width - 44, caption_y), row["date"], font=date_font,
+                          fill="#b6b8ab", anchor="rm")
                 frame = Image.new("RGB", VIDEO_SIZE, BACKGROUND)
-                frame.paste(card, (10, 10), mask)
+                frame.paste(card, (20, 20), mask)
                 stream.write(frame.tobytes())
         if encoder.wait():
             raise subprocess.CalledProcessError(encoder.returncode, command)
 
     for extension in ("mp4", "webm"):
         path = output / f"{stem}.{extension}"
-        # Decode each output and check that every card has its full display time.
+        # Decode each output and check that every card appears once at the target size and rate.
         probe = subprocess.run([
             "ffprobe", "-v", "error", "-err_detect", "explode", "-count_frames",
-            "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames",
-            "-of", "csv=p=0", str(path),
+            "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate,nb_read_frames",
+            "-of", "json", str(path),
         ], check=True, capture_output=True, text=True)
-        expected = len(days) * VIDEO_FPS // PHOTOS_PER_SECOND
-        if probe.stderr or probe.stdout.strip() != str(expected):
-            raise RuntimeError(f"{path.name}: expected {expected} frames, got {probe.stdout.strip()}. {probe.stderr}")
+        expected = {
+            "width": VIDEO_SIZE[0], "height": VIDEO_SIZE[1],
+            "r_frame_rate": f"{VIDEO_FPS}/1", "nb_read_frames": str(len(days)),
+        }
+        if probe.stderr or json.loads(probe.stdout)["streams"] != [expected]:
+            raise RuntimeError(f"{path.name}: expected {expected}, got {probe.stdout}. {probe.stderr}")
     (output / "notes.md").write_text(f"紀錄被被day{first}~{last}的縮影\n", encoding="utf-8")
     (output / "metadata.json").write_text(json.dumps({
         "tag": f"day{first}-day{last}", "stem": stem,
