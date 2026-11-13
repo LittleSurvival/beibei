@@ -13,4 +13,6 @@ npm run build
 
 播放器的速度與跳轉在 `src/player/usePlayback.ts`，Canvas 繪圖在 `src/player/renderer.ts`，轉場定義在 `src/player/effects.ts`。
 
+「畫面穩定」預設開啟。網站用 `content/stabilization.json` 的座標將照片對齊並裁切。新增照片後，可在裝有 `opencv-python-headless` 的 Python 環境執行 `python scripts/stabilize.py` 更新座標，再抽查新照片的構圖。尚未有對齊座標的照片會使用原始構圖。
+
 GitHub Pages 的發布來源設為 **GitHub Actions**。PR 執行型別檢查、照片索引驗證和建置。推送至 `main` 後，workflow 部署 `dist`。

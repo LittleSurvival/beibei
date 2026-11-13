@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { archive, byDay, photoUrl } from '../archive';
 import type { Effect } from './effects';
-import { renderFrame } from './renderer';
+import { renderFrame, type PlayerImage } from './renderer';
 
 type ImageState = { image: HTMLImageElement; status: 'loading' | 'ready' | 'error' };
 
@@ -13,9 +13,10 @@ export function usePlayback(
   pause: () => void,
   fps: number,
   effect: Effect,
+  stabilized: boolean,
 ) {
   const cache = useRef(new Map<number, ImageState>());
-  const lastDrawn = useRef<HTMLImageElement | undefined>(undefined);
+  const lastDrawn = useRef<PlayerImage | undefined>(undefined);
   const [status, setStatus] = useState<ImageState['status']>('loading');
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export function usePlayback(
     }
 
     const frame = cache.current.get(day)!;
+    const current = { image: frame.image, day };
     const previous = lastDrawn.current;
     let visibleAt: number | undefined;
     let raf: number;
@@ -54,11 +56,11 @@ export function usePlayback(
         if (visibleAt === undefined) {
           visibleAt = now;
           setStatus('ready');
-          lastDrawn.current = frame.image;
+          lastDrawn.current = current;
         }
         const elapsed = now - visibleAt;
         const progress = Math.min(elapsed / Math.min(260, 800 / fps), 1);
-        if (canvas.current) renderFrame(canvas.current, frame.image, previous, effect, progress);
+        if (canvas.current) renderFrame(canvas.current, current, previous, effect, progress, stabilized);
         if (playing && elapsed >= 1000 / fps) {
           const next = archive[index + 1];
           if (next) setDay(next.day);
@@ -71,7 +73,7 @@ export function usePlayback(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [canvas, day, effect, fps, pause, playing, setDay]);
+  }, [canvas, day, effect, fps, pause, playing, setDay, stabilized]);
 
   return status;
 }

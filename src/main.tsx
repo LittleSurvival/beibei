@@ -20,11 +20,12 @@ function App() {
   const [playing, setPlaying] = useState(false);
   const [fps, setFps] = useState(6);
   const [effect, setEffect] = useState<Effect>('cut');
+  const [stabilized, setStabilized] = useState(true);
   const pause = useCallback(() => setPlaying(false), []);
   const canvas = useRef<HTMLCanvasElement>(null);
   const settings = useRef<HTMLDialogElement>(null);
   const reducedMotion = useReducedMotion();
-  const status = usePlayback(canvas, day, setDay, playing, pause, fps, reducedMotion ? 'cut' : effect);
+  const status = usePlayback(canvas, day, setDay, playing, pause, fps, reducedMotion ? 'cut' : effect, stabilized);
   const selected = byDay.get(day);
   const { previous, next } = nearby(day);
 
@@ -115,6 +116,8 @@ function App() {
             onClick={() => settings.current?.close()}>×</button>
         </div>
         <div className="settings">
+          <label className="stabilization"><input type="checkbox" checked={stabilized}
+            onChange={(e) => setStabilized(e.target.checked)} />畫面穩定</label>
           <label>速度 <select value={fps} onChange={(e) => setFps(+e.target.value)}>
             <option value="2">2 張／秒</option><option value="6">6 張／秒</option>
             <option value="12">12 張／秒</option><option value="24">24 張／秒</option>

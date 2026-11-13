@@ -71,6 +71,8 @@ dialog::backdrop { background: rgb(0 0 0 / .65); }
 .dialog-heading button { font-size: 1.35rem; }
 .settings { flex-wrap: wrap; }
 .settings label { display: flex; gap: 6px; align-items: center; }
+.settings .stabilization { flex-basis: 100%; }
+.stabilization input { accent-color: var(--accent); }
 .jump { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-top: 16px; }
 .error { color: #ffd0ae; margin-top: 10px; font-size: .88rem; }
 .gaps { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
