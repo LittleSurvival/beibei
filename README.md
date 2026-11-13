@@ -1,6 +1,22 @@
-# 被被觀察日記
+<h1 align="center">被被觀察日記</h1>
 
-屋簷上的被被照片紀錄。用 React、TypeScript、Vite、Motion 和 Canvas 2D 製作。
+<p align="center">一條卡在屋簷上的被子，從 Day 1 開始的照片紀錄。</p>
+
+<p align="center">
+  <a href="https://littlesurvival.github.io/beibei/">
+    <img alt="點我查看被被" src="https://img.shields.io/badge/%E9%BB%9E%E6%88%91%E6%9F%A5%E7%9C%8B%E8%A2%AB%E8%A2%AB-2E7D52?style=for-the-badge" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="./fangyi-timelapse/photos/day901-day1000/day971.jpg" alt="Day 971 的被被掛在屋簷邊" width="240" />
+</p>
+
+## 關於這份紀錄
+
+原貼主是 Threads 上的 **芳宜**。照片來自她的每日紀錄，網站把照片整理成可播放的縮時和時間軸。每張照片都附有原文連結。 [Threads @fangyi_0923](https://www.threads.com/@fangyi_0923)
+
+## 本機開發與建置
 
 ```sh
 npm ci
@@ -8,11 +24,3 @@ npm run dev
 npm run check
 npm run build
 ```
-
-照片沿用 `fangyi-timelapse/photos` 下的資料夾。更新紀錄時，新增 `day{編號}.jpg` 並在 `content/days.json` 按 Day 順序加入照片相對路徑、台北日期及 Threads 原文連結。索引中的半日加更照常播放，時間軸從索引推算整數 Day 的缺口。可用 `?day=228.5` 開啟單日紀錄。
-
-播放器的速度與跳轉在 `src/player/usePlayback.ts`，Canvas 繪圖在 `src/player/renderer.ts`，轉場定義在 `src/player/effects.ts`。
-
-「畫面穩定」預設開啟。網站用 `content/stabilization.json` 的座標對齊照片，並以同一個視野播放。原始照片未涵蓋的邊緣會顯示播放器底色。新增照片後，可在裝有 `opencv-python-headless` 的 Python 環境執行 `python scripts/stabilize.py` 更新座標，再抽查新照片的構圖。尚未有對齊座標的照片會使用原始構圖。
-
-GitHub Pages 的發布來源設為 **GitHub Actions**。PR 執行型別檢查、照片索引驗證和建置。推送至 `main` 後，workflow 部署 `dist`。
