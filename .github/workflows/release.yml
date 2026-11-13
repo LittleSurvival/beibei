@@ -1,0 +1,46 @@
+name: Release timelapse videos
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install video tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install Pillow==12.1.1
+      - name: Render and verify videos
+        run: python scripts/render-release.py "$RUNNER_TEMP/videos"
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$RUNNER_TEMP/videos"
+          tag=$(jq -er .tag metadata.json)
+          title=$(jq -er .title metadata.json)
+          stem=$(jq -er .stem metadata.json)
+          if existing=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [[ "$existing" == "false" ]]; then
+              echo "Release $tag is already published."
+              exit 0
+            fi
+            gh release upload "$tag" "$stem.mp4" "$stem.webm" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --title "$title" --notes-file notes.md
+          else
+            gh release create "$tag" "$stem.mp4" "$stem.webm" --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" --title "$title" --notes-file notes.md
+          fi
