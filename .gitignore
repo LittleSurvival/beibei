@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.planning/
+fangyi-timelapse/*
+!fangyi-timelapse/photos/
+fangyi-timelapse/photos/misc/
