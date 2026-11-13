@@ -6,6 +6,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 W, H = 480, 640
+# Use one viewport in the reference image's coordinates for every photo.
+CROP_CENTER = np.array([230, 320])
+CROP_ZOOM = 1.65
 cv.setNumThreads(1)
 records = json.loads((ROOT/'content/days.json').read_text())
 photos = ROOT/'fangyi-timelapse/photos'
@@ -67,15 +70,8 @@ manual = {
 }
 
 def crop_matrix(matrix):
-    inverse = cv.invertAffineTransform(matrix)
-    cx, cy = inverse[:, :2] @ [230, 320] + inverse[:, 2]
-    corners = np.array([[-240, -320], [240, -320], [240, 320], [-240, 320]])
-    if not (0 < cx < 480 and 0 < cy < 640):
-        raise ValueError('Crop center is outside the source photo')
-    x, y = (corners @ inverse[:, :2].T).T
-    zoom = max(1.43, 1.012 * max(-min(x)/cx, max(x)/(480-cx), -min(y)/cy, max(y)/(640-cy)))
-    frame = matrix * zoom
-    frame[:, 2] += [240 - 230*zoom, 320 - 320*zoom]
+    frame = matrix * CROP_ZOOM
+    frame[:, 2] += np.array([W / 2, H / 2]) - CROP_CENTER * CROP_ZOOM
     return np.round(frame, 5).flatten().tolist()
 
 def export(results):
