@@ -84,6 +84,7 @@ function App() {
               role="img" aria-label={`Day ${day} 的被被照片`} />
             {!selected && <div className="frame-message"><small>目前未找到這天的照片</small></div>}
             {selected && status === 'loading' && <div className="frame-message"><small>載入照片中…</small></div>}
+            {selected && status === 'buffering' && <span className="buffering" role="status">緩衝中…</span>}
             {selected && status === 'error' && <div className="frame-message"><small>這張照片載入失敗</small></div>}
           </div>
           <figcaption>

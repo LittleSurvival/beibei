@@ -46,6 +46,7 @@ canvas { display: block; width: 100%; height: 100%; }
 canvas[hidden] { display: none; }
 .frame-message { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 12px; font-size: 2rem; background: #10130f; }
 .frame-message small { font-size: .95rem; color: var(--muted); }
+.buffering { position: absolute; right: 12px; bottom: 12px; padding: 4px 9px; border-radius: 6px; background: #10130fe6; font-size: .8rem; }
 .controls { grid-area: controls; min-width: 0; margin-top: 24px; }
 .transport { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 8px; }
 .timeline { margin-top: 16px; }
