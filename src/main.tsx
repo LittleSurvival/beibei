@@ -121,7 +121,7 @@ function App() {
           <div className="speed-setting">
             <label htmlFor="playback-speed">速度</label>
             <output htmlFor="playback-speed">{fps} 張／秒</output>
-            <input id="playback-speed" type="range" min={2} max={24} step={1} value={fps}
+            <input id="playback-speed" type="range" min={2} max={48} step={1} value={fps}
               aria-valuetext={`${fps} 張／秒`} onChange={(e) => setFps(e.target.valueAsNumber)} />
           </div>
           <label>轉場 <select disabled={!!reducedMotion} value={reducedMotion ? 'cut' : effect}
