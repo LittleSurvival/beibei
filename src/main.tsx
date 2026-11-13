@@ -107,7 +107,10 @@ function App() {
               max={latest.day} step="1" value={Math.floor(day)} onChange={(e) => seek(+e.target.value)} />
             <div className="range-labels"><span>Day 1</span><span>Day {latest.day}</span></div>
           </div>
-          {selected && <a className="source" href={selected.url} target="_blank" rel="noreferrer">Threads 原文 ↗</a>}
+          <nav className="photo-links" aria-label="延伸閱讀">
+            {selected && <a className="source" href={selected.url} target="_blank" rel="noreferrer">Threads 原文 ↗</a>}
+            <a className="source" href={`./history.html?day=${day}`}>歷史事件 →</a>
+          </nav>
         </div>
       </main>
       <dialog ref={settings} aria-labelledby="settings-title">
