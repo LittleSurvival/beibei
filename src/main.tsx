@@ -18,7 +18,7 @@ function App() {
   const [query, setQuery] = useState(String(day));
   const [error, setError] = useState('');
   const [playing, setPlaying] = useState(false);
-  const [fps, setFps] = useState(6);
+  const [fps, setFps] = useState(24);
   const [effect, setEffect] = useState<Effect>('cut');
   const [stabilized, setStabilized] = useState(true);
   const pause = useCallback(() => setPlaying(false), []);
@@ -118,10 +118,12 @@ function App() {
         <div className="settings">
           <label className="stabilization"><input type="checkbox" checked={stabilized}
             onChange={(e) => setStabilized(e.target.checked)} />畫面穩定</label>
-          <label>速度 <select value={fps} onChange={(e) => setFps(+e.target.value)}>
-            <option value="2">2 張／秒</option><option value="6">6 張／秒</option>
-            <option value="12">12 張／秒</option><option value="24">24 張／秒</option>
-          </select></label>
+          <div className="speed-setting">
+            <label htmlFor="playback-speed">速度</label>
+            <output htmlFor="playback-speed">{fps} 張／秒</output>
+            <input id="playback-speed" type="range" min={2} max={24} step={1} value={fps}
+              aria-valuetext={`${fps} 張／秒`} onChange={(e) => setFps(e.target.valueAsNumber)} />
+          </div>
           <label>轉場 <select disabled={!!reducedMotion} value={reducedMotion ? 'cut' : effect}
             onChange={(e) => setEffect(e.target.value as Effect)}>
             <option value="cut">直接切換</option><option value="fade">交叉淡化</option>
