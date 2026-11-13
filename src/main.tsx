@@ -21,11 +21,12 @@ function App() {
   const [fps, setFps] = useState(24);
   const [effect, setEffect] = useState<Effect>('cut');
   const [stabilized, setStabilized] = useState(true);
+  const [reversed, setReversed] = useState(false);
   const pause = useCallback(() => setPlaying(false), []);
   const canvas = useRef<HTMLCanvasElement>(null);
   const settings = useRef<HTMLDialogElement>(null);
   const reducedMotion = useReducedMotion();
-  const status = usePlayback(canvas, day, setDay, playing, pause, fps, reducedMotion ? 'cut' : effect, stabilized);
+  const status = usePlayback(canvas, day, setDay, playing, pause, fps, reducedMotion ? 'cut' : effect, stabilized, reversed);
   const selected = byDay.get(day);
   const { previous, next } = nearby(day);
 
@@ -58,8 +59,13 @@ function App() {
       pause();
       return;
     }
-    if (day >= latest.day) setDay(archive[0].day);
-    else if (!selected && next) setDay(next.day);
+    if (reversed) {
+      if (day <= archive[0].day) setDay(latest.day);
+      else if (!selected && previous) setDay(previous.day);
+    } else {
+      if (day >= latest.day) setDay(archive[0].day);
+      else if (!selected && next) setDay(next.day);
+    }
     setPlaying(true);
   }
 
@@ -96,7 +102,7 @@ function App() {
           <div className="transport">
             <button onClick={() => previous && seek(previous.day)} disabled={!previous}
               aria-label="上一張">←</button>
-            <button className="primary" onClick={toggle}>{playing ? '暫停' : '播放縮時'}</button>
+            <button className="primary" onClick={toggle}>{playing ? '暫停' : reversed ? '倒放縮時' : '播放縮時'}</button>
             <button onClick={() => next && seek(next.day)} disabled={!next}
               aria-label="下一張">→</button>
           </div>
@@ -120,8 +126,10 @@ function App() {
             onClick={() => settings.current?.close()}>×</button>
         </div>
         <div className="settings">
-          <label className="stabilization"><input type="checkbox" checked={stabilized}
+          <label className="settings-toggle"><input type="checkbox" checked={stabilized}
             onChange={(e) => setStabilized(e.target.checked)} />畫面穩定</label>
+          <label className="settings-toggle"><input type="checkbox" checked={reversed}
+            onChange={(e) => setReversed(e.target.checked)} />倒放（由新到舊）</label>
           <div className="speed-setting">
             <label htmlFor="playback-speed">速度</label>
             <output htmlFor="playback-speed">{fps} 張／秒</output>

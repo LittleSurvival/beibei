@@ -14,6 +14,7 @@ export function usePlayback(
   fps: number,
   effect: Effect,
   stabilized: boolean,
+  reversed: boolean,
 ) {
   const cache = useRef(new Map<number, ImageState>());
   const lastDrawn = useRef<PlayerImage | undefined>(undefined);
@@ -29,12 +30,16 @@ export function usePlayback(
     }
     const index = archive.indexOf(photo);
     const lookahead = playing ? Math.max(12, fps) : 4;
-    const nearby = archive.slice(Math.max(0, index - 2), index + 1 + lookahead);
+    const upcoming = reversed
+      ? archive.slice(Math.max(0, index - lookahead), index).reverse()
+      : archive.slice(index + 1, index + 1 + lookahead);
+    const behind = reversed ? archive.slice(index + 1, index + 3) : archive.slice(Math.max(0, index - 2), index);
+    const nearby = [photo, ...upcoming, ...behind];
     const keep = new Set(nearby.map((frame) => frame.day));
     for (const cachedDay of cache.current.keys()) {
       if (!keep.has(cachedDay)) cache.current.delete(cachedDay);
     }
-    for (const frame of [photo, ...nearby]) {
+    for (const frame of nearby) {
       if (cache.current.has(frame.day)) continue;
       const image = new Image();
       if (frame === photo) image.fetchPriority = 'high';
@@ -47,10 +52,10 @@ export function usePlayback(
     const frame = cache.current.get(day)!;
     const current = { image: frame.image, day };
     const previous = lastDrawn.current;
-    const next = archive[index + 1];
+    const next = upcoming[0];
     const nextFrame = next && cache.current.get(next.day);
     // Keep half a second ready before starting or recovering from a slow download.
-    const reserve = archive.slice(index + 1, index + 1 + Math.ceil(fps / 2));
+    const reserve = upcoming.slice(0, Math.ceil(fps / 2));
     const interval = 1000 / fps;
     let needsBuffer = nextAt.current === undefined;
     let bufferSince: number | undefined;
@@ -115,7 +120,7 @@ export function usePlayback(
     };
     tick(performance.now());
     return () => cancelAnimationFrame(raf);
-  }, [canvas, day, effect, fps, pause, playing, setDay, stabilized]);
+  }, [canvas, day, effect, fps, pause, playing, setDay, stabilized, reversed]);
 
   return status;
 }

@@ -74,8 +74,8 @@ dialog::backdrop { background: rgb(0 0 0 / .65); }
 .dialog-heading button { font-size: 1.35rem; }
 .settings { flex-wrap: wrap; }
 .settings label { display: flex; gap: 6px; align-items: center; }
-.settings .stabilization { flex-basis: 100%; }
-.stabilization input { accent-color: var(--accent); }
+.settings .settings-toggle { flex-basis: 100%; }
+.settings-toggle input { accent-color: var(--accent); }
 .speed-setting { flex-basis: 100%; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
 .speed-setting output { color: var(--accent); font-variant-numeric: tabular-nums; }
 .speed-setting input { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: var(--accent); cursor: pointer; }
