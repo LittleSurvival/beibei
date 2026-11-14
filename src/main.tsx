@@ -114,7 +114,7 @@ function App() {
             <div className="range-labels"><span>Day 1</span><span>Day {latest.day}</span></div>
           </div>
           <nav className="photo-links" aria-label="延伸閱讀">
-            {selected && (selected.url ? <a className="source" href={selected.url} target="_blank" rel="noreferrer">Threads 原文 ↗</a> : <span className="source">原文連結待補</span>)}
+            {selected && <a className="source" href={selected.url} target="_blank" rel="noreferrer">Threads 原文 ↗</a>}
             <a className="source" href={`./history.html?day=${day}`}>歷史事件 →</a>
           </nav>
         </div>

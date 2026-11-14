@@ -15,12 +15,12 @@
 </p>
 <p align="center">
   <strong>Day 972 · 被被還在。</strong><br />
-  2026-11-14 · 攝影紀錄：芳宜 @fangyi_0923（Day 972 原文連結待補）
+  2026-11-14 · 攝影紀錄：<a href="https://www.threads.com/@fangyi_0923">芳宜 @fangyi_0923</a>
 </p>
 
 ## 關於這份紀錄
 
-原貼主是 Threads 上的 **芳宜**。照片來自她的每日紀錄，網站把照片整理成可播放的縮時和時間軸。照片附有原文連結；尚未核實的連結會標示待補，不以其他貼文代替。 [Threads @fangyi_0923](https://www.threads.com/@fangyi_0923)
+原貼主是 Threads 上的 **芳宜**。照片來自她的每日紀錄，網站把照片整理成可播放的縮時和時間軸。每張照片都附有原文連結。 [Threads @fangyi_0923](https://www.threads.com/@fangyi_0923)
 
 ## 本機開發與建置
 
