@@ -14,7 +14,7 @@ for (const entry of archive) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date))) {
     throw new Error(`Invalid date for Day ${day}`);
   }
-  if (!/^https:\/\/www\.threads\.com\/@fangyi_0923\/post\/[\w-]+$/.test(url)) {
+  if (url !== null && !/^https:\/\/www\.threads\.com\/@fangyi_0923\/post\/[\w-]+$/.test(url)) {
     throw new Error(`Invalid source for Day ${day}`);
   }
   if (!/^day[\d.]+-day[\d.]+\/day[\d.]+\.jpg$/.test(image)
