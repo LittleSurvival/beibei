@@ -58,7 +58,9 @@ canvas[hidden] { display: none; }
 .range-labels, .settings, .jump label { color: var(--muted); font-size: .88rem; }
 .source { margin-top: 16px; display: inline-block; color: var(--accent); }
 .source:hover { text-decoration: underline; }
-.photo-links { display: flex; flex-wrap: wrap; gap: 0 24px; }
+.photo-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 24px; }
+.photo-links .icon-link { display: inline-flex; align-items: center; gap: 5px; }
+.icon-link svg { width: 17px; height: 17px; fill: currentColor; }
 dialog {
   width: min(420px, 100% - 32px);
   max-height: calc(100dvh - 32px);
