@@ -9,13 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="https://littlesurvival.github.io/beibei/?day=973">
-    <img src="./fangyi-timelapse/photos/day901-day1000/day973.jpg" alt="Day 973 的被被掛在屋簷邊，點圖查看被被觀察日記" width="360" />
+  <a href="https://littlesurvival.github.io/beibei/?day=974">
+    <img src="./fangyi-timelapse/photos/day901-day1000/day974.jpg" alt="Day 974 的被被掛在屋簷邊，點圖查看被被觀察日記" width="360" />
   </a>
 </p>
 <p align="center">
-  <strong>Day 973 · 被被還在。</strong><br />
-  2026-11-15 · 攝影紀錄：<a href="https://www.threads.com/@fangyi_0923">芳宜 @fangyi_0923</a>
+  <strong>Day 974 · 被被還在。</strong><br />
+  2026-11-16 · 攝影紀錄：<a href="https://www.threads.com/@fangyi_0923">芳宜 @fangyi_0923</a>
 </p>
 
 ## 關於這份紀錄
