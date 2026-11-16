@@ -1,4 +1,4 @@
-"""Render the archive's photo card as MP4 and WebM."""
+"""Render and verify the archive's photo cards as MP4."""
 
 import argparse
 import json
@@ -62,9 +62,6 @@ def render(output, photos_per_second=DEFAULT_PHOTOS_PER_SECOND):
         "-framerate", str(photos_per_second), "-i", "-",
         "-c:v", "libx264", "-preset", "fast", "-crf", "18",
         "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(output / f"{stem}.mp4"),
-        "-c:v", "libvpx-vp9", "-crf", "25", "-b:v", "0",
-        "-deadline", "good", "-cpu-used", "4", "-row-mt", "1",
-        "-pix_fmt", "yuv420p", str(output / f"{stem}.webm"),
     ]
     with subprocess.Popen(command, stdin=subprocess.PIPE) as encoder:
         with encoder.stdin as stream:
@@ -85,20 +82,19 @@ def render(output, photos_per_second=DEFAULT_PHOTOS_PER_SECOND):
         if encoder.wait():
             raise subprocess.CalledProcessError(encoder.returncode, command)
 
-    for extension in ("mp4", "webm"):
-        path = output / f"{stem}.{extension}"
-        # Decode each output and check that every card appears once at the target size and rate.
-        probe = subprocess.run([
-            "ffprobe", "-v", "error", "-err_detect", "explode", "-count_frames",
-            "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate,nb_read_frames",
-            "-of", "json", str(path),
-        ], check=True, capture_output=True, text=True)
-        expected = {
-            "width": VIDEO_SIZE[0], "height": VIDEO_SIZE[1],
-            "r_frame_rate": f"{photos_per_second}/1", "nb_read_frames": str(len(days)),
-        }
-        if probe.stderr or json.loads(probe.stdout)["streams"] != [expected]:
-            raise RuntimeError(f"{path.name}: expected {expected}, got {probe.stdout}. {probe.stderr}")
+    path = output / f"{stem}.mp4"
+    # Decode each output and check that every card appears once at the target size and rate.
+    probe = subprocess.run([
+        "ffprobe", "-v", "error", "-err_detect", "explode", "-count_frames",
+        "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate,nb_read_frames",
+        "-of", "json", str(path),
+    ], check=True, capture_output=True, text=True)
+    expected = {
+        "width": VIDEO_SIZE[0], "height": VIDEO_SIZE[1],
+        "r_frame_rate": f"{photos_per_second}/1", "nb_read_frames": str(len(days)),
+    }
+    if probe.stderr or json.loads(probe.stdout)["streams"] != [expected]:
+        raise RuntimeError(f"{path.name}: expected {expected}, got {probe.stdout}. {probe.stderr}")
     (output / "notes.md").write_text(f"紀錄被被day{first}~{last}的縮影\n", encoding="utf-8")
     (output / "metadata.json").write_text(json.dumps({
         "tag": f"day{first}-day{last}", "stem": stem,

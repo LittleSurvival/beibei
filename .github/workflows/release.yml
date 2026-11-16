@@ -1,4 +1,4 @@
-name: Release timelapse videos
+name: Release timelapse MP4
 on:
   workflow_dispatch:
     inputs:
@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           python -m pip install Pillow==12.1.1
-      - name: Render and verify videos
+      - name: Render and verify MP4
         env:
           PHOTOS_PER_SECOND: ${{ inputs.photos_per_second || '24' }}
         run: python scripts/render-release.py "$RUNNER_TEMP/videos" --photos-per-second "$PHOTOS_PER_SECOND"
@@ -46,9 +46,9 @@ jobs:
               echo "Release $tag is already published."
               exit 0
             fi
-            gh release upload "$tag" "$stem.mp4" "$stem.webm" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$tag" "$stem.mp4" --repo "$GITHUB_REPOSITORY" --clobber
             gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --title "$title" --notes-file notes.md
           else
-            gh release create "$tag" "$stem.mp4" "$stem.webm" --repo "$GITHUB_REPOSITORY" \
+            gh release create "$tag" "$stem.mp4" --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" --title "$title" --notes-file notes.md
           fi
