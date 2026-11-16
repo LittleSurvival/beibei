@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ALIGNMENT_SIZE = (480, 640)
 PHOTO_SIZE = (1080, 1440)
 VIDEO_SIZE = (1120, 1600)
-VIDEO_FPS = 24
+DEFAULT_PHOTOS_PER_SECOND = 24
 BACKGROUND = "#131512"
 PHOTO_BACKGROUND = "#10130f"
 
@@ -41,7 +41,9 @@ def photo_frame(path, matrix):
     )
 
 
-def render(output):
+def render(output, photos_per_second=DEFAULT_PHOTOS_PER_SECOND):
+    if photos_per_second <= 0:
+        raise ValueError("photos_per_second must be positive")
     days = json.loads((ROOT / "content/days.json").read_text(encoding="utf-8"))
     transforms = json.loads((ROOT / "content/stabilization.json").read_text(encoding="utf-8"))
     first, last = days[0]["day"], days[-1]["day"]
@@ -57,7 +59,7 @@ def render(output):
     command = [
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
         "-f", "rawvideo", "-pixel_format", "rgb24", "-video_size", f"{VIDEO_SIZE[0]}x{VIDEO_SIZE[1]}",
-        "-framerate", str(VIDEO_FPS), "-i", "-",
+        "-framerate", str(photos_per_second), "-i", "-",
         "-c:v", "libx264", "-preset", "fast", "-crf", "18",
         "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(output / f"{stem}.mp4"),
         "-c:v", "libvpx-vp9", "-crf", "25", "-b:v", "0",
@@ -93,7 +95,7 @@ def render(output):
         ], check=True, capture_output=True, text=True)
         expected = {
             "width": VIDEO_SIZE[0], "height": VIDEO_SIZE[1],
-            "r_frame_rate": f"{VIDEO_FPS}/1", "nb_read_frames": str(len(days)),
+            "r_frame_rate": f"{photos_per_second}/1", "nb_read_frames": str(len(days)),
         }
         if probe.stderr or json.loads(probe.stdout)["streams"] != [expected]:
             raise RuntimeError(f"{path.name}: expected {expected}, got {probe.stdout}. {probe.stderr}")
@@ -108,4 +110,9 @@ def render(output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
-    render(parser.parse_args().output.resolve())
+    parser.add_argument("--photos-per-second", type=int, default=DEFAULT_PHOTOS_PER_SECOND,
+                        help="Photo cards per second (default: 24); each photo occupies one frame.")
+    args = parser.parse_args()
+    if args.photos_per_second <= 0:
+        parser.error("--photos-per-second must be positive")
+    render(args.output.resolve(), args.photos_per_second)

@@ -1,6 +1,12 @@
 name: Release timelapse videos
 on:
   workflow_dispatch:
+    inputs:
+      photos_per_second:
+        description: "Photos per second (one frame per photo)"
+        required: true
+        default: "24"
+        type: string
 
 permissions:
   contents: write
@@ -24,7 +30,9 @@ jobs:
           sudo apt-get install -y ffmpeg
           python -m pip install Pillow==12.1.1
       - name: Render and verify videos
-        run: python scripts/render-release.py "$RUNNER_TEMP/videos"
+        env:
+          PHOTOS_PER_SECOND: ${{ inputs.photos_per_second || '24' }}
+        run: python scripts/render-release.py "$RUNNER_TEMP/videos" --photos-per-second "$PHOTOS_PER_SECOND"
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
